@@ -11,16 +11,15 @@
 # words or detail to be legible.
 
 import time, sys, os, re
-from neopixel import * # See https://learn.adafruit.com/neopixels-on-raspberry-pi/software
+import board
+import neopixel
+#from neopixel import * # See https://learn.adafruit.com/neopixels-on-raspberry-pi/software
 from PIL import Image  # Use apt-get install python-imaging to install this
 
 # LED strip configuration:
-LED_COUNT      = 96      # Number of LED pixels.
-LED_PIN        = 18      # GPIO pin connected to the pixels (must support PWM!).
-LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-LED_DMA        = 5       # DMA channel to use for generating signal (try 5)
-LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
+LED_COUNT      = 96               # Number of LED pixels.
+LED_PIN        = board.D18        # Using pin 18 on Raspberry Pi
+ORDER          = neopixel.RGB     # LED order on NeoPixel strip
 
 # Speed of movement, in seconds (recommend 0.1-0.3)
 SPEED=0.075
@@ -66,8 +65,8 @@ if MATRIX_WIDTH * MATRIX_HEIGHT != len(myMatrix):
 
 def allonecolour(strip,colour):
   # Paint the entire matrix one colour
-  for i in range(strip.numPixels()):
-    strip.setPixelColor(i,colour)
+  for i in range(LED_COUNT):
+    strip[i] = colour
   strip.show()
 
 def colour(r,g,b):
@@ -78,10 +77,8 @@ def colourTuple(rgbTuple):
   return Color(rgbTuple[1],rgbTuple[0],rgbTuple[2])
 
 def initLeds(strip):
-  # Intialize the library (must be called once before other functions).
-  strip.begin()
   # Wake up the LEDs by briefly setting them all to white
-  allonecolour(strip,colour(255,255,255))
+  allonecolour(strip,255))
   time.sleep(0.01)
 
 # Open the image file given as the command line parameter
@@ -143,7 +140,7 @@ im.paste(origIm,(0,0,origIm.size[0],MATRIX_HEIGHT))
 im.paste(origIm.crop((0,0,MATRIX_WIDTH,MATRIX_HEIGHT)),(origIm.size[0],0,origIm.size[0]+MATRIX_WIDTH,MATRIX_HEIGHT))
 
 # Create NeoPixel object with appropriate configuration.
-strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS)
+strip = neopixel.NeoPixel(pin, PIXEL_NUM, auto_write=False, pixel_order=ORDER)
 initLeds(strip)
 
 # And here we go.
@@ -172,7 +169,8 @@ try:
       dots=list(rg.getdata())
   
       for i in range(len(dots)):
-        strip.setPixelColor(myMatrix[i],colourTuple(dots[i]))
+#        strip.setPixelColor(myMatrix[i],colourTuple(dots[i]))
+         strip[myMatrix[i]] = colourTuple(dots[i]) 
       strip.show()
 
       # Check for instructions from the text file
