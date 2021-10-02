@@ -71,7 +71,8 @@ def allonecolour(strip,colour):
 
 def colour(r,g,b):
   # Fix for Neopixel RGB->GRB, also British spelling
-  return Color(g,r,b)
+#  return Color(g,r,b)
+  return Color(r,g,b)
 
 def colourTuple(rgbTuple):
   return Color(rgbTuple[1],rgbTuple[0],rgbTuple[2])
