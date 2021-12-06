@@ -22,7 +22,8 @@ LED_PIN        = board.D18        # Using pin 18 on Raspberry Pi
 ORDER          = neopixel.RGB     # LED order on NeoPixel strip
 
 # Speed of movement, in seconds (recommend 0.1-0.3)
-SPEED=0.075
+#SPEED=0.075
+SPEED = 0.075
 
 # Size of your matrix
 MATRIX_WIDTH=12
@@ -72,14 +73,14 @@ def allonecolour(strip,colour):
 def colour(r,g,b):
   # Fix for Neopixel RGB->GRB, also British spelling
 #  return Color(g,r,b)
-  return Color(r,g,b)
+  return (r,g,b)
 
 def colourTuple(rgbTuple):
-  return Color(rgbTuple[1],rgbTuple[0],rgbTuple[2])
+  return (rgbTuple[0],rgbTuple[1],rgbTuple[2])
 
 def initLeds(strip):
   # Wake up the LEDs by briefly setting them all to white
-  allonecolour(strip,255))
+  allonecolour(strip,255)
   time.sleep(0.01)
 
 # Open the image file given as the command line parameter
@@ -96,6 +97,7 @@ if loadIm.size[1] != MATRIX_HEIGHT:
   origIm=loadIm.resize((loadIm.size[0]/(loadIm.size[1]//MATRIX_HEIGHT),MATRIX_HEIGHT),Image.BICUBIC)
 else:
   origIm=loadIm.copy()
+
 # If the input is a very small portrait image, then no amount of resizing will save us
 if origIm.size[0] < MATRIX_WIDTH:
   raise Exception("Picture is too narrow. Must be at least %s pixels wide" % MATRIX_WIDTH)
@@ -129,7 +131,7 @@ match=re.search( r'^(?P<base>.*)\.[^\.]+$', sys.argv[1], re.M|re.I)
 if match:
   txtfile=match.group('base')+'.txt'
   if os.path.isfile(txtfile):
-    print "Found text file %s" % (txtfile)
+    print ("Found text file " + txtfile)
     f=open(txtfile,'r')
     txtlines=f.readlines()
     f.close()
@@ -141,7 +143,7 @@ im.paste(origIm,(0,0,origIm.size[0],MATRIX_HEIGHT))
 im.paste(origIm.crop((0,0,MATRIX_WIDTH,MATRIX_HEIGHT)),(origIm.size[0],0,origIm.size[0]+MATRIX_WIDTH,MATRIX_HEIGHT))
 
 # Create NeoPixel object with appropriate configuration.
-strip = neopixel.NeoPixel(pin, PIXEL_NUM, auto_write=False, pixel_order=ORDER)
+strip = neopixel.NeoPixel(LED_PIN, LED_COUNT, auto_write=False, pixel_order=ORDER)
 initLeds(strip)
 
 # And here we go.
@@ -178,26 +180,27 @@ try:
       if tx<len(txtlines):
         match = re.search( r'^(?P<start>\s*\d+)(-(?P<finish>\d+))?\s+((?P<command>\S+)(\s+(?P<param>\d+(\.\d+)?))?)$', txtlines[tx], re.M|re.I)
         if match:
-          print "Found valid command line %d:\n%s" % (tx,txtlines[tx])
+#          print "Found valid command line %d:\n%s" % (tx,txtlines[tx])
+          print ("Found valid command line") 
           st=int(match.group('start'))
           fi=st
-          print "Current pixel %05d start %05d finish %05d" % (x,st,fi)
+#          print "Current pixel %05d start %05d finish %05d" % (x,st,fi)
           if match.group('finish'):
             fi=int(match.group('finish'))
           if x>=st and tx<=fi:
             if match.group('command').lower()=='speed':
               SPEED=float(match.group('param'))
               thissleep=SPEED
-              print "Position %d : Set speed to %.3f secs per frame" % (x,thissleep)
+#              print "Position %d : Set speed to %.3f secs per frame" % (x,thissleep)
             elif match.group('command').lower()=='flip':
               thissleep=float(match.group('param'))
               thisincrement=MATRIX_WIDTH
-              print "Position %d: Flip for %.3f secs" % (x,thissleep)
+#              print "Position %d: Flip for %.3f secs" % (x,thissleep)
             elif match.group('command').lower()=='hold':
               thissleep=float(match.group('param'))
-              print "Position %d: Hold for %.3f secs" % (x,thissleep)
+ #             print "Position %d: Hold for %.3f secs" % (x,thissleep)
             elif match.group('command').lower()=='jump':
-              print "Position %d: Jump to position %s" % (x,match.group('param'))
+#              print "Position %d: Jump to position %s" % (x,match.group('param'))
               x=int(match.group('param'))
               thisincrement=0
           # Move to the next line of the text file
@@ -205,12 +208,12 @@ try:
           if x>=fi:
             tx=tx+1
         else:
-          print "Found INVALID command line %d:\n%s" % (tx,txtlines[tx])
+#          print "Found INVALID command line %d:\n%s" % (tx,txtlines[tx])
           tx=tx+1
 
       x=x+thisincrement
       time.sleep(thissleep)
 
 except (KeyboardInterrupt, SystemExit):
-  print "Stopped"
+  print ("Stopped")
   allonecolour(strip,colour(0,0,0))
